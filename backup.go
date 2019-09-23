@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 
@@ -12,10 +13,10 @@ import (
 func main() {
 	// Open DB
 	var backupFile string
-	db, err := badger.Open(badger.DefaultOptions("badger31"). 
-		WithValueDir("badger31").
-		WithTruncate(false) )
-	
+	db, err := badger.Open(badger.DefaultOptions("./data").
+		WithValueDir("./data").
+		WithTruncate(false))
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,6 +27,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("backupfile name %s", f.Name())
 
 	bw := bufio.NewWriterSize(f, 64<<20)
 	if _, err = db.Backup(bw, 0); err != nil {

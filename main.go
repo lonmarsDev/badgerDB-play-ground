@@ -1,78 +1,79 @@
 package main
 
-import (
-	//	"bufio"
-	"log"
-	//	"os"
+// package main
 
-	badger "github.com/dgraph-io/badger"
-	//	y "github.com/dgraph-io/badger/y"
+import (
+	"github.com/dgraph-io/badger"
 )
 
 func main() {
-	// Open the Badger database located in the /tmp/badger directory.
-	// It will be created if it doesn't exist.
-	db, err := badger.Open(badger.DefaultOptions("badger31"))
+
+	opts := badger.DefaultOptions("./data")
+	opts.Dir = "./data"
+	opts.ValueDir = "./data"
+	//opts.Logger = nil
+	//opts.Truncate = true
+	db, err := badger.Open(opts)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
+
 	defer db.Close()
 
-	// Start a writable transaction.
-	txn := db.NewTransaction(true)
-	defer txn.Discard()
+	// err = db.View(func(txn *badger.Txn) error {
 
-	// Use the transaction...
-	err = txn.Set([]byte("answer"), []byte("42"))
+	// 	item, err := txn.Get([]byte("marlon1"))
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	var valNot, valCopy []byte
+	// 	err = item.Value(func(val []byte) error {
+	// 		// This func with val would only be called if item.Value encounters no error.
+
+	// 		// Accessing val here is valid.
+	// 		fmt.Printf("The answer is: %s\n", val)
+
+	// 		// Copying or parsing val is valid.
+	// 		valCopy = append([]byte{}, val...)
+
+	// 		// Assigning val slice to another variable is NOT OK.
+	// 		valNot = val // Do not do this.
+	// 		return nil
+	// 	})
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	// DO NOT access val here. It is the most common cause of bugs.
+	// 	fmt.Printf("NEVER do this. %s\n", valNot)
+
+	// 	// You must copy it to use it outside item.Value(...).
+	// 	fmt.Printf("The answer is: %s\n", valCopy)
+
+	// 	// Alternatively, you could also use item.ValueCopy().
+	// 	valCopy, err = item.ValueCopy(nil)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	fmt.Printf("The answer is: %s\n", valCopy)
+
+	// 	return nil
+
+	// })
+
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	txn := db.NewTransaction(true)
+	err = txn.Set([]byte("marlon1"), []byte("marlon-value1"))
+	if err != nil {
+		panic(err)
+	}
+	err = txn.Commit()
 	if err != nil {
 		panic(err)
 	}
 
-	// Commit the transaction and check for error.
-	if err := txn.Commit(); err != nil {
-		panic(err)
-	}
-
-	err = db.Update(func(txn *badger.Txn) error {
-		err := txn.Set([]byte("answer"), []byte("43"))
-		return err
-	})
-	// Your code here…
-
-	//   err := db.View(func(txn *badger.Txn) error {
-	// 	// Your code here…
-	// 	return nil
-	//   })
-
 }
-
-// func doBackup() error {
-// 	// Open DB
-// 	var backupFile string
-// 	db, err := badger.Open(badger.DefaultOptions("badger31"))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer db.Close()
-// 	backupFile = "backup.bak"
-// 	// Create File
-// 	f, err := os.Create(backupFile)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	bw := bufio.NewWriterSize(f, 64<<20)
-// 	if _, err = db.Backup(bw, 0); err != nil {
-// 		return err
-// 	}
-
-// 	if err = bw.Flush(); err != nil {
-// 		return err
-// 	}
-
-// 	if err = y.FileSync(f); err != nil {
-// 		return err
-// 	}
-
-// 	return f.Close()
-// }
